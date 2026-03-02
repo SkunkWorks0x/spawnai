@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import { generateAgentConfig } from "@/lib/agents/config-generator";
 import { generateSlug } from "@/lib/utils/slug";
 import { createClient, createAdminClient } from "@/lib/supabase/server";
+import { checkAgentLimit } from "@/lib/billing/usage";
 
 export async function POST(request: Request) {
   try {
@@ -33,15 +34,29 @@ export async function POST(request: Request) {
       );
     }
 
-    // Generate config via Claude Sonnet
-    const config = await generateAgentConfig(trimmed);
-    config.slug = generateSlug(config.name);
-
     // Check if user is authenticated
     const supabase = await createClient();
     const {
       data: { user },
     } = await supabase.auth.getUser();
+
+    // Check agent creation limit
+    const agentLimit = await checkAgentLimit(user?.id, session_id);
+    if (!agentLimit.allowed) {
+      return NextResponse.json(
+        {
+          error: `You've reached your free plan limit of ${agentLimit.limit} agents. Upgrade to Pro for up to 25 agents.`,
+          limitReached: true,
+          currentCount: agentLimit.currentCount,
+          limit: agentLimit.limit,
+        },
+        { status: 403 }
+      );
+    }
+
+    // Generate config via Claude Sonnet
+    const config = await generateAgentConfig(trimmed);
+    config.slug = generateSlug(config.name);
 
     // Insert agent using admin client (bypasses RLS)
     const admin = createAdminClient();

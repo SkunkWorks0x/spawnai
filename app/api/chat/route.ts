@@ -2,6 +2,17 @@
 
 import { agentRuntime } from "@/lib/agents/runtime";
 import { createClient } from "@/lib/supabase/server";
+import { checkUsageLimits, incrementUsage } from "@/lib/billing/usage";
+
+const corsHeaders = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+};
+
+export async function OPTIONS() {
+  return new Response(null, { status: 200, headers: corsHeaders });
+}
 
 export async function POST(request: Request) {
   try {
@@ -11,14 +22,14 @@ export async function POST(request: Request) {
     if (!agent_slug || typeof agent_slug !== "string") {
       return new Response(
         JSON.stringify({ error: "agent_slug is required" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
     if (!message || typeof message !== "string" || message.trim().length === 0) {
       return new Response(
         JSON.stringify({ error: "message is required" }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
@@ -28,6 +39,37 @@ export async function POST(request: Request) {
       data: { user },
     } = await supabase.auth.getUser();
     const userId = user?.id;
+
+    // Check usage limits before processing
+    const usage = await checkUsageLimits(userId, session_id);
+    if (!usage.allowed) {
+      const encoder = new TextEncoder();
+      const limitStream = new ReadableStream({
+        start(controller) {
+          controller.enqueue(
+            encoder.encode(
+              `data: ${JSON.stringify({
+                error: "limit_reached",
+                message: usage.reason,
+                currentUsage: usage.currentUsage,
+                limit: usage.limit,
+                plan: usage.plan,
+                upgradeUrl: "/pricing",
+              })}\n\n`
+            )
+          );
+          controller.close();
+        },
+      });
+      return new Response(limitStream, {
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "text/event-stream",
+          "Cache-Control": "no-cache",
+          Connection: "keep-alive",
+        },
+      });
+    }
 
     const runtime = agentRuntime({
       agentSlug: agent_slug,
@@ -61,11 +103,19 @@ export async function POST(request: Request) {
             resolvedConversationId = result.value;
           }
 
+          // Increment usage after successful response
+          await incrementUsage(userId, session_id);
+
           controller.enqueue(
             encoder.encode(
               `data: ${JSON.stringify({
                 done: true,
                 conversation_id: resolvedConversationId,
+                usage: {
+                  currentUsage: usage.currentUsage + 1,
+                  limit: usage.limit,
+                  plan: usage.plan,
+                },
               })}\n\n`
             )
           );
@@ -86,6 +136,7 @@ export async function POST(request: Request) {
 
     return new Response(stream, {
       headers: {
+        ...corsHeaders,
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",
         Connection: "keep-alive",
@@ -95,7 +146,7 @@ export async function POST(request: Request) {
     console.error("[chat] request error:", error);
     return new Response(
       JSON.stringify({ error: "Internal server error" }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
+      { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
 }

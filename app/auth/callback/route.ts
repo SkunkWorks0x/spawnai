@@ -37,6 +37,21 @@ export async function GET(request: Request) {
             console.error("[auth] claim_temp_data error:", claimError.message);
           }
 
+          // Store referral info if present
+          const refSource = cookieStore.get("spawnai_ref")?.value;
+          const refAgent = cookieStore.get("spawnai_ref_agent")?.value;
+          if (refSource) {
+            await admin
+              .from("profiles")
+              .update({
+                referral_source: refSource,
+                referral_agent_slug: refAgent || null,
+              })
+              .eq("id", user.id);
+            cookieStore.delete("spawnai_ref");
+            cookieStore.delete("spawnai_ref_agent");
+          }
+
           // Check if a claimed agent exists — redirect to it
           const { data: claimedAgent } = await admin
             .from("agents")
