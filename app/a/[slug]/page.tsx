@@ -37,6 +37,8 @@ export default function AgentChat() {
   const [usage, setUsage] = useState<UsageInfo | null>(null);
 
   // Embed panel state
+  const [spawnTime, setSpawnTime] = useState<string | null>(null);
+  const [showSpawnBadge, setShowSpawnBadge] = useState(false);
   const [embedCopied, setEmbedCopied] = useState(false);
   const [linkCopied, setLinkCopied] = useState(false);
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
@@ -49,6 +51,20 @@ export default function AgentChat() {
 
   const appUrl = typeof window !== "undefined" ? window.location.origin : "https://spawnai.vercel.app";
   const agentUrl = `${appUrl}/a/${slug}`;
+
+  // Check for spawn timing badge
+  useEffect(() => {
+    const startStr = sessionStorage.getItem("spawnai_spawn_start");
+    if (startStr) {
+      const elapsed = (Date.now() - parseInt(startStr, 10)) / 1000;
+      if (elapsed < 30) {
+        setSpawnTime(elapsed.toFixed(1));
+        setShowSpawnBadge(true);
+        setTimeout(() => setShowSpawnBadge(false), 3000);
+      }
+      sessionStorage.removeItem("spawnai_spawn_start");
+    }
+  }, []);
 
   // Load agent config
   useEffect(() => {
@@ -314,6 +330,12 @@ export default function AgentChat() {
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0">
+          {/* Spawn speed badge */}
+          {showSpawnBadge && spawnTime && (
+            <span className="hidden sm:inline-flex items-center gap-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 px-3 py-1 text-xs font-medium text-emerald-400 animate-pulse">
+              Spawned in {spawnTime}s
+            </span>
+          )}
           {/* Usage indicator */}
           {usage && (
             <div className="hidden sm:flex items-center gap-2 mr-2 text-xs text-slate-400">

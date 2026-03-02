@@ -6,38 +6,44 @@ import { useRouter } from "next/navigation";
 const USE_CASES = [
   {
     label: "Answering customer questions",
+    subtitle: "24/7 support agent for your website",
     icon: "M8.625 9.75a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H8.25m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0H12m4.125 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm0 0h-.375m-13.5 3.01c0 1.6 1.123 2.994 2.707 3.227 1.087.16 2.185.283 3.293.369V21l4.184-4.183a1.14 1.14 0 0 1 .778-.332 48.294 48.294 0 0 0 5.83-.498c1.585-.233 2.708-1.626 2.708-3.228V6.741c0-1.602-1.123-2.995-2.707-3.228A48.394 48.394 0 0 0 12 3c-2.392 0-4.744.175-7.043.513C3.373 3.746 2.25 5.14 2.25 6.741v6.018Z",
-    prompt: "I want a customer support agent that answers questions about my product, handles common issues, and escalates complex problems. It should be friendly, accurate, and always try to resolve issues on the first message.",
+    template: "support" as const,
     color: "from-blue-500 to-cyan-500",
   },
   {
     label: "Finding leads & writing outreach",
+    subtitle: "Sales researcher that writes emails that convert",
     icon: "M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z",
-    prompt: "I want a sales agent that identifies potential leads, researches their company, and writes personalized cold outreach emails. It should follow proven sales frameworks like AIDA and adapt tone based on the industry.",
+    template: "sales" as const,
     color: "from-emerald-500 to-teal-500",
   },
   {
     label: "Teaching or tutoring",
+    subtitle: "Expert tutor that remembers every student's progress",
     icon: "M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342M6.75 15a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm0 0v-3.675A55.378 55.378 0 0 1 12 8.443m-7.007 11.55A5.981 5.981 0 0 0 6.75 15.75v-1.5",
-    prompt: "I want a tutoring agent that explains concepts clearly, adapts to the student's level, asks follow-up questions to check understanding, and provides practice problems with step-by-step feedback.",
+    template: "tutor" as const,
     color: "from-amber-500 to-orange-500",
   },
   {
     label: "Creating content & social posts",
+    subtitle: "Content partner that knows your brand voice",
     icon: "m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L10.582 16.07a4.5 4.5 0 0 1-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 0 1 1.13-1.897l8.932-8.931Zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0 1 15.75 21H5.25A2.25 2.25 0 0 1 3 18.75V8.25A2.25 2.25 0 0 1 5.25 6H10",
-    prompt: "I want a content creation agent that generates social media posts, blog outlines, and marketing copy. It should match my brand voice, suggest relevant hashtags, and create weekly content calendars.",
+    template: "content" as const,
     color: "from-pink-500 to-rose-500",
   },
   {
     label: "Analyzing data & research",
+    subtitle: "Research analyst that delivers real insights",
     icon: "M3.75 3v11.25A2.25 2.25 0 0 0 6 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0 1 18 16.5h-2.25m-7.5 0h7.5m-7.5 0-1 3m8.5-3 1 3m0 0 .5 1.5m-.5-1.5h-9.5m0 0-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6",
-    prompt: "I want a research agent that analyzes data, summarizes findings, identifies trends, and creates clear reports. It should be thorough, cite sources when possible, and present actionable insights.",
+    template: "research" as const,
     color: "from-violet-500 to-purple-500",
   },
   {
     label: "Something else entirely",
+    subtitle: "Describe any task — get an agent in 60 seconds",
     icon: "M9.813 15.904 9 18.75l-.813-2.846a4.5 4.5 0 0 0-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 0 0 3.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 0 0 3.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 0 0-3.09 3.09ZM18.259 8.715 18 9.75l-.259-1.035a3.375 3.375 0 0 0-2.455-2.456L14.25 6l1.036-.259a3.375 3.375 0 0 0 2.455-2.456L18 2.25l.259 1.035a3.375 3.375 0 0 0 2.455 2.456L21.75 6l-1.036.259a3.375 3.375 0 0 0-2.455 2.456Z",
-    prompt: "",
+    template: null,
     color: "from-indigo-500 to-purple-500",
   },
 ];
@@ -50,16 +56,55 @@ export default function Home() {
   const router = useRouter();
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  function handleUseCaseClick(prompt: string) {
-    if (prompt) {
-      setDescription(prompt);
+  function getSessionId() {
+    return document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("temp_session_id="))
+      ?.split("=")[1];
+  }
+
+  async function handleUseCaseClick(template: string | null) {
+    if (!template) {
+      // "Something else" — scroll to textarea
+      textareaRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+      setTimeout(() => {
+        textareaRef.current?.focus();
+        setSpawnPulse(true);
+        setTimeout(() => setSpawnPulse(false), 2000);
+      }, 400);
+      return;
     }
-    textareaRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
-    setTimeout(() => {
-      textareaRef.current?.focus();
-      setSpawnPulse(true);
-      setTimeout(() => setSpawnPulse(false), 2000);
-    }, 400);
+
+    // Instant spawn — skip Claude Sonnet, use pre-built config
+    setLoading(true);
+    setError("");
+
+    // Store spawn timestamp for speed badge
+    sessionStorage.setItem("spawnai_spawn_start", Date.now().toString());
+
+    try {
+      const res = await fetch("/api/instant-spawn", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ template, session_id: getSessionId() }),
+      });
+
+      if (!res.ok) {
+        const data = await res.json();
+        if (data.limitReached) {
+          setError(data.error);
+          setLoading(false);
+          return;
+        }
+        throw new Error(data.error || "Failed to spawn agent");
+      }
+
+      const { slug } = await res.json();
+      router.push(`/a/${slug}`);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong");
+      setLoading(false);
+    }
   }
 
   async function handleSpawn() {
@@ -76,18 +121,15 @@ export default function Home() {
     setLoading(true);
     setError("");
 
-    try {
-      // Read temp_session_id from cookie (set by middleware)
-      const sessionId = document.cookie
-        .split("; ")
-        .find((row) => row.startsWith("temp_session_id="))
-        ?.split("=")[1];
+    // Store spawn timestamp for speed badge
+    sessionStorage.setItem("spawnai_spawn_start", Date.now().toString());
 
+    try {
       // Generate config + save agent server-side
       const res = await fetch("/api/generate-config", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ description: trimmed, session_id: sessionId }),
+        body: JSON.stringify({ description: trimmed, session_id: getSessionId() }),
       });
 
       if (!res.ok) {
@@ -123,7 +165,7 @@ export default function Home() {
           </h1>
 
           <p className="mt-6 text-lg text-slate-400 sm:text-xl max-w-2xl mx-auto">
-            Describe what you want. Get a working AI agent in 60 seconds.
+            Pick a use case or describe your own. Get a working AI agent in seconds.
             No&nbsp;code. No&nbsp;API&nbsp;keys. Just results.
           </p>
 
@@ -184,10 +226,11 @@ export default function Home() {
             {USE_CASES.map((uc) => (
               <button
                 key={uc.label}
-                onClick={() => handleUseCaseClick(uc.prompt)}
-                className="group flex items-start gap-4 rounded-2xl border border-slate-800 bg-slate-900/50 p-5 text-left hover:border-slate-600 hover:bg-slate-800/50 transition-all duration-200"
+                onClick={() => handleUseCaseClick(uc.template)}
+                disabled={loading}
+                className="group flex items-start gap-4 rounded-2xl border border-slate-800 bg-slate-900/50 p-5 text-left hover:border-slate-600 hover:bg-slate-800/50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <div className={`shrink-0 mt-0.5 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${uc.color} bg-opacity-20`}>
+                <div className={`shrink-0 mt-0.5 flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br ${uc.color}`}>
                   <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
                     <path strokeLinecap="round" strokeLinejoin="round" d={uc.icon} />
                   </svg>
@@ -196,11 +239,9 @@ export default function Home() {
                   <p className="font-medium text-white group-hover:text-indigo-300 transition-colors">
                     {uc.label}
                   </p>
-                  {uc.prompt && (
-                    <p className="mt-1 text-xs text-slate-500 line-clamp-2">
-                      {uc.prompt.slice(0, 80)}...
-                    </p>
-                  )}
+                  <p className="mt-1 text-xs text-slate-500">
+                    {uc.subtitle}
+                  </p>
                 </div>
               </button>
             ))}

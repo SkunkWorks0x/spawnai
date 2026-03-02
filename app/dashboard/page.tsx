@@ -95,11 +95,35 @@ export default function Dashboard() {
   const messagePercent = Math.min(100, (messagesToday / limits.messages) * 100);
   const agentPercent = Math.min(100, (agents.length / limits.agents) * 100);
 
+  const totalConversations = agents.reduce((sum, a) => sum + (a.total_conversations || 0), 0);
+  const totalMessages = agents.reduce((sum, a) => sum + (a.total_messages || 0), 0);
+  const estimatedHoursSaved = Math.round((totalMessages * 2) / 60 * 10) / 10; // ~2 min saved per message exchange
+
   return (
     <div className="min-h-screen bg-slate-950 text-white">
       <div className="max-w-5xl mx-auto px-6 py-12">
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <p className="mt-2 text-slate-400">Manage your agents, usage, and plan.</p>
+
+        {/* ROI Summary Banner */}
+        {totalMessages > 0 && (
+          <div className="mt-6 rounded-xl border border-indigo-500/20 bg-indigo-500/5 p-5">
+            <div className="flex flex-wrap items-center gap-x-8 gap-y-2 text-sm">
+              <div>
+                <span className="text-slate-400">Total conversations: </span>
+                <span className="font-semibold text-white">{totalConversations.toLocaleString()}</span>
+              </div>
+              <div>
+                <span className="text-slate-400">Messages handled: </span>
+                <span className="font-semibold text-white">{totalMessages.toLocaleString()}</span>
+              </div>
+              <div>
+                <span className="text-slate-400">Estimated time saved: </span>
+                <span className="font-semibold text-emerald-400">~{estimatedHoursSaved} hours</span>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8">
@@ -217,28 +241,57 @@ export default function Dashboard() {
                     <span className="text-xs text-slate-600 shrink-0">{timeAgo(agent.created_at)}</span>
                   </div>
 
-                  <div className="flex items-center justify-between mt-4">
-                    <div className="flex items-center gap-4 text-xs text-slate-400">
-                      <span>{agent.total_messages || 0} messages</span>
-                      <span>{agent.total_conversations || 0} conversations</span>
+                  {(agent.total_conversations || 0) === 0 ? (
+                    <div className="mt-3 flex items-center justify-between">
+                      <p className="text-xs text-slate-500">No conversations yet — share your agent to get started</p>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/a/${agent.slug}`}
+                          className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
+                        >
+                          Chat
+                        </Link>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(`${window.location.origin}/a/${agent.slug}`);
+                          }}
+                          className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
+                        >
+                          Share
+                        </button>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Link
-                        href={`/a/${agent.slug}`}
-                        className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
-                      >
-                        Chat
-                      </Link>
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(`${window.location.origin}/a/${agent.slug}`);
-                        }}
-                        className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
-                      >
-                        Copy Link
-                      </button>
+                  ) : (
+                    <div className="flex items-center justify-between mt-4">
+                      <div className="flex items-center gap-4 text-xs text-slate-400">
+                        <span>{agent.total_messages || 0} messages</span>
+                        <span>{agent.total_conversations || 0} conversations</span>
+                        <span className="text-emerald-400">~{Math.round(((agent.total_messages || 0) * 2) / 60 * 10) / 10}h saved</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Link
+                          href={`/a/${agent.slug}`}
+                          className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
+                        >
+                          Chat
+                        </Link>
+                        <Link
+                          href={`/a/${agent.slug}?tab=embed`}
+                          className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
+                        >
+                          Embed
+                        </Link>
+                        <button
+                          onClick={() => {
+                            navigator.clipboard.writeText(`${window.location.origin}/a/${agent.slug}`);
+                          }}
+                          className="rounded-lg border border-slate-700 px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-700 hover:text-white transition-colors"
+                        >
+                          Share
+                        </button>
+                      </div>
                     </div>
-                  </div>
+                  )}
                 </div>
               ))}
             </div>
